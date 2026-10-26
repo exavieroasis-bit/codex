@@ -28,8 +28,8 @@
     return `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="translate(${fit.center-fit.width/2} ${fit.bottom-height}) scale(${fit.width/box[2]} ${height/box[3]}) translate(${-box[0]} ${-box[1]}) rotate(${angle} ${x} ${y})" fill="${fill}"/>`;
   }
   function definition(state){
-    let defs='';
-    if(state.hat!=='none'||['round','aviator'].includes(state.glasses))defs+=`<image id="pride-wearable-atlas" href="${HATS}" width="${geometry.wearables.width}" height="${geometry.wearables.height}"/>`;
+    let defs=global.LionRegal.definitions(state);
+    if(state.hat!=='none'&&state.hat!=='cap')defs+=`<image id="pride-wearable-atlas" href="${HATS}" width="${geometry.wearables.width}" height="${geometry.wearables.height}"/>`;
     if(state.top!=='none')defs+=`<image id="pride-wardrobe-atlas" href="${CLOTHES}" width="${geometry.wardrobe.width}" height="${geometry.wardrobe.height}"/>`;
     return defs;
   }
@@ -42,6 +42,7 @@
   }
   function renderHat(state){
     if(state.hat==='none')return '';
+    if(state.hat==='cap')return global.LionRegal.renderCap();
     const fit=hatFits[state.hat],box=geometry.wearables.items[state.hat].box;
     const h=Math.min(state.hat==='halo'?105:state.hat==='crown'?275:240,fit.width*box[3]/box[2]);
     const illustration=asset('wearables',state.hat,fit.center-fit.width/2,fit.bottom-h,fit.width,h);
@@ -55,21 +56,21 @@
   }
   function occludeHat(state){
     if(state.hat==='none'||state.hat==='halo')return '';
+    // The new cap covers the crest itself; subtracting a rectangular scalp left
+    // visible cut marks in the mane. Natural rear tufts remain behind the cap.
+    if(state.hat==='cap')return '';
     const f=hatFits[state.hat],data=geometry.wearables.items[state.hat],box=data.box;
     const height=Math.min(state.hat==='crown'?275:240,f.width*box[3]/box[2]);
     return `<g transform="translate(${f.center-f.width/2} ${f.bottom-height}) scale(${f.width/box[2]} ${height/box[3]}) translate(${-box[0]} ${-box[1]})"><path d="${data.occluder}" fill="black"/></g>`;
   }
   function hatContact(state){
     if(state.hat==='none'||state.hat==='halo')return '';
+    if(state.hat==='cap')return global.LionRegal.capShadow();
     const f=hatFits[state.hat];
     return `<path d="M${f.center-f.width*.42} ${f.seat-10}Q${f.center} ${f.seat-17} ${f.center+f.width*.42} ${f.seat+11}" stroke="#22110d" stroke-opacity=".23" stroke-width="8" fill="none" filter="url(#pride-atelier-contact)"/>`;
   }
   function renderGlasses(state){
-    if(!['round','aviator'].includes(state.glasses))return null;
-    // Atlas lenses were drawn in the same strong near/far perspective as this face.
-    const crops=state.glasses==='round'?[[599,954,126,160],[744,1012,88,109]]:[[931,953,185,172],[1147,1018,92,126]];
-    const lens=(box,x,y,w,h)=>`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${box.join(' ')}" preserveAspectRatio="none" overflow="hidden"><use href="#pride-wearable-atlas"/></svg>`;
-    return `<g stroke-linecap="round" fill="none"><path d="M519 349Q500 338 493 340M771 349L782 344" stroke="#8e6c2d" stroke-width="3.5"/><path d="M647 355Q680 339 708 355" stroke="#6d4d21" stroke-width="4"/><path d="M647 353Q680 338 708 353" stroke="#e1c171" stroke-width="1.6"/>${lens(crops[0],516,316,132,96)}${lens(crops[1],708,330,64,74)}</g>`;
+    return global.LionRegal.renderGlasses(state);
   }
   function restoreHatOpening(state){
     if(!openings[state.hat])return '';

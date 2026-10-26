@@ -11,6 +11,8 @@ instructions = """PRIDE — LION PFP STUDIO
    If a text editor opens instead, right-click the file, choose Open With,
    and select a web browser.
 
+PRIDE-Preview.png shows the current default artwork at full size.
+
 All artwork and controls are included inside the HTML file. No installation,
 server, account, wallet, or internet connection is needed after downloading.
 
@@ -23,4 +25,6 @@ archive = root / "PRIDE-Studio.zip"
 with ZipFile(archive, "w", compression=ZIP_DEFLATED) as bundle:
     bundle.write(page, "PRIDE-Studio.html")
     bundle.writestr("OPEN-FIRST.txt", instructions)
+    if (root / "PRIDE-Preview.png").exists():
+        bundle.write(root / "PRIDE-Preview.png", "PRIDE-Preview.png")
 print(f"Packaged {archive.name}: {archive.stat().st_size:,} bytes")

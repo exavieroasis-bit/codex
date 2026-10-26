@@ -2,7 +2,7 @@
 
 An original lion collectible generator with a detailed illustrated lion, expressive inked facial features, and fitted accessory layers. The Artist Series replaces the initial simplified character with a 1254px transparent illustrated base, intricate mane detail, shaded anatomy, and more elaborate hats, eyewear, scars, and clothing.
 
-The wearable revision uses newly illustrated headwear and garments with material texture and shading matched to the lion. Each hat has its own footprint and inner-rim opening; the lion's fur appears through that opening. Clothing sits beneath the connected mane mask. Round and aviator lenses are fitted separately to the near and far eye positions.
+The current refinement includes a dedicated full-resolution navy cap and a complete gold navigator frame, with continuous rims, nose pads, and controlled reflections. Glasses are fitted as one intact pair, rather than separately cropped lenses. The lower mane has a repainted finish with smoother directed locks, blended beneath the unchanged face and upper mane. Clothing sits behind a continuous mane silhouette, without the old rectangular neck cutoff.
 
 Open **index.html** in a modern browser. The exported HTML contains all scripts, styles, illustrated base, and editable traits. No package installation, network connection, account, or wallet is needed. The managed browser used in this cloud environment blocks `file://` URLs, so automated browser validation uses an internal local HTTP server instead.
 
@@ -10,7 +10,8 @@ If the workspace link displays HTML source, it has opened the code viewer. Downl
 
 ## Create a lion
 
-- Choose **hats, glasses, skins, eye types, eye colors, mouths, face scars, tops, and backgrounds**. Skins recolor the illustrated base; eye, mouth, and accessory options have individually drawn shapes. Defaults include the jeweled crown, mariner striped shirt, and teal backdrop.
+- Choose **hats, glasses, skins, eye types, eye colors, mouths, face scars, tops, and backgrounds**. Skins recolor the illustrated base; eye, mouth, and accessory options have individually drawn shapes. The opening portrait is the blue lion with its navy cap, gold navigator glasses, sand hoodie, closed confident expression, and teal backdrop.
+- The tongue option has been retired. Previously saved tongue choices reopen with the closed confident expression; other saved identity and trait settings are retained. Gold and silver navigator finishes replace the former cropped aviator and round-lens treatments.
 - Click **Shuffle traits** to randomly pick a combination. Accessory options include no accessory.
 - Lock individual categories to preserve them during shuffling. Locks do not prevent manual editing. Reset restores the default lion and clears locks.
 - Give your lion a name and edition number.
@@ -28,6 +29,9 @@ The app creates artwork and metadata. It does not deploy contracts, mint tokens,
 - `lion-premium-traits.js`: detailed hats, glasses, scars, clothing, and layering masks.
 - `lion-mane-geometry.js`: connected mane boundary used to fit collars and clothing beneath the fur without restoring bare shoulder pixels. This precomputed vector geometry adds no runtime or build dependencies.
 - `lion-base.png`: transparent detailed lion illustration used by the live generator.
+- `lion-refined-mane.png`: repainted lower-mane finish, blended into the original portrait below the face.
+- `lion-regal-cap.png`, `lion-regal-glasses.png`: dedicated high-resolution cap and complete frame illustration.
+- `lion-regal.js`: fitted intact frames, cap placement, and their shared material/contact treatment.
 - `lion-wearables.png`, `lion-wardrobe.png`: transparent illustrated layer sheets used by the live generator.
 - `lion-atelier.js`: individual wearable placement, head openings, contact shading, and fitted lens rendering.
 - `lion-atelier-geometry.js`: precomputed alpha outlines that isolate individual sheet assets without neighboring artwork. No geometry-processing packages are needed to build or run the app.
@@ -36,5 +40,6 @@ The app creates artwork and metadata. It does not deploy contracts, mint tokens,
 - `build.py`: combines those files into the standalone `index.html`. Run `python build.py` after editing source files.
 - `mossborn.html`: the previous MOSSBORN generator, preserved as a separate standalone page.
 - `lion-art-v1.js`: the previous simplified lion renderer, retained separately.
+- `PRIDE-Preview.png`: the current default portrait exported by the actual generator, also included in the ZIP for quick review.
 
 For optional local development, run `python -m http.server 8000 --directory /workspace/codex` and open the page using your browser’s local server workflow.

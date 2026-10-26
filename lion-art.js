@@ -6,15 +6,16 @@
     {key:'background',label:'Background',options:[{id:'mint',label:'Mint',color:'#b8c9bc'},{id:'sand',label:'Sand',color:'#dfcda9'},{id:'sky',label:'Powder blue',color:'#acc2cf'},{id:'rose',label:'Dusty rose',color:'#c6a2a3'},{id:'lilac',label:'Lilac',color:'#b6aec8'},{id:'gold',label:'Mustard',color:'#c9b06e'},{id:'ink',label:'Midnight',color:'#525d68'},{id:'cream',label:'Cream',color:'#eee6d5'},{id:'teal',label:'Deep teal',color:'#086a7a'}]},
     {key:'skin',label:'Skin',options:[{id:'safari',label:'Safari tan',color:'#d6a760'},{id:'ivory',label:'Ivory',color:'#e8ddc4'},{id:'charcoal',label:'Charcoal',color:'#5e6069'},{id:'rose',label:'Pink lemonade',color:'#d997a5'},{id:'zombie',label:'Zombie',color:'#a6b882'},{id:'blue',label:'Arctic blue',color:'#91b9c5'},{id:'gold',label:'Solid gold',color:'#e5bd55'},{id:'tiger',label:'Tiger stripes',color:'#d9954e'}]},
     {key:'hat',label:'Hat',options:[{id:'none',label:'No hat'},{id:'beanie',label:'Red beanie',color:'#a74a40'},{id:'cap',label:'Club cap',color:'#435b69'},{id:'bucket',label:'Bucket hat',color:'#c8b87b'},{id:'crown',label:'The crown',color:'#dfbb57'},{id:'cowboy',label:'Outlaw',color:'#9c7651'},{id:'sailor',label:'Sailor',color:'#e5e1d6'},{id:'halo',label:'Golden halo',color:'#e2bb54'}]},
-    {key:'glasses',label:'Glasses',options:[{id:'none',label:'No glasses'},{id:'shades',label:'Wayfarers',color:'#302b2b'},{id:'round',label:'Round specs',color:'#a5884b'},{id:'aviator',label:'Aviators',color:'#b69b65'},{id:'pixel',label:'Pixel shades',color:'#252228'},{id:'heart',label:'Heart frames',color:'#b55361'},{id:'monocle',label:'Monocle',color:'#d0ad59'}]},
+    {key:'glasses',label:'Glasses',options:[{id:'none',label:'No glasses'},{id:'shades',label:'Wayfarers',color:'#302b2b'},{id:'round',label:'Silver navigator',color:'#a5884b'},{id:'aviator',label:'Gold navigator',color:'#b69b65'},{id:'pixel',label:'Pixel shades',color:'#252228'},{id:'heart',label:'Heart frames',color:'#b55361'},{id:'monocle',label:'Monocle',color:'#d0ad59'}]},
     {key:'eyeType',label:'Eye type',options:[{id:'bored',label:'Unbothered'},{id:'sleepy',label:'Sleep deprived'},{id:'angry',label:'Bad mood'},{id:'wide',label:'Wide awake'},{id:'hearts',label:'Lovestruck'},{id:'cyborg',label:'Cyborg'}]},
     {key:'eyeColor',label:'Eye color',options:[{id:'amber',label:'Amber',color:'#bc843d'},{id:'green',label:'Emerald',color:'#4c876d'},{id:'blue',label:'Ice blue',color:'#73a6c4'},{id:'violet',label:'Violet',color:'#9378af'},{id:'red',label:'Crimson',color:'#b65b55'},{id:'black',label:'Onyx',color:'#4a454c'},{id:'gold',label:'Electric gold',color:'#e7c94d'}]},
-    {key:'mouth',label:'Mouth',options:[{id:'smirk',label:'Side smirk'},{id:'bored',label:'Deadpan'},{id:'grin',label:'Big grin'},{id:'snarl',label:'Fangs out'},{id:'tongue',label:'Tongue out'},{id:'gold',label:'Gold grill'},{id:'bubble',label:'Bubblegum'},{id:'cigar',label:'Cigar club'}]},
+    {key:'mouth',label:'Mouth',options:[{id:'smirk',label:'Confident'},{id:'bored',label:'Composed'},{id:'grin',label:'Big grin'},{id:'snarl',label:'Fangs out'},{id:'gold',label:'Gold grill'},{id:'bubble',label:'Bubblegum'},{id:'cigar',label:'Cigar club'}]},
     {key:'scar',label:'Face scar',options:[{id:'none',label:'No scars'},{id:'cheek',label:'Cheek stitch'},{id:'claws',label:'Claw marks'},{id:'cross',label:'Cross cut'},{id:'lightning',label:'Lightning bolt'},{id:'bandage',label:'Bandage'},{id:'eyebrow',label:'Brow split'}]},
     {key:'top',label:'Top',options:[{id:'none',label:'Bare fur'},{id:'varsity',label:'Varsity jacket',color:'#48654e'},{id:'hoodie',label:'Oversized hoodie',color:'#d1c7ad'},{id:'tee',label:'Black tee',color:'#39373b'},{id:'denim',label:'Denim jacket',color:'#6b8b9b'},{id:'suit',label:'Night suit',color:'#434752'},{id:'tank',label:'Ribbed tank',color:'#e8dfca'},{id:'aloha',label:'Aloha shirt',color:'#578e88'},{id:'mariner',label:'Mariner stripes',color:'#ede4cf'}]}
   ];
-  const defaults = {background:'teal',skin:'safari',hat:'crown',glasses:'none',eyeType:'bored',eyeColor:'amber',mouth:'smirk',scar:'none',top:'mariner'};
+  const defaults = {background:'teal',skin:'blue',hat:'cap',glasses:'aviator',eyeType:'bored',eyeColor:'amber',mouth:'smirk',scar:'none',top:'hoodie'};
   const BASE_IMAGE='__PREMIUM_LION_BASE__';
+  const REFINED_MANE='__REFINED_MANE__';
   const anchors={
     eyes:{left:{x:582,y:364,width:105,height:58,rotation:0},right:{x:740,y:365,width:49,height:53,rotation:0}},
     mouth:{x:663,y:640,width:140,rotation:-12},
@@ -76,7 +77,9 @@
     const defs=`<defs>
       ${atelier.definition(state)}
       <filter id="pride-atelier-contact" x="-10%" y="-100%" width="120%" height="300%"><feGaussianBlur stdDeviation="2.3"/></filter>
-      <image id="pride-base-image" href="${BASE_IMAGE}" width="1000" height="1000"/>
+      <linearGradient id="pride-lower-fur-blend" x1="0" y1="700" x2="0" y2="766" gradientUnits="userSpaceOnUse"><stop stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white"/></linearGradient>
+      <mask id="pride-refined-lower-mane" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" style="mask-type:alpha"><rect width="1000" height="1000" fill="url(#pride-lower-fur-blend)"/></mask>
+      <g id="pride-base-image"><image href="${BASE_IMAGE}" width="1000" height="1000"/><image href="${REFINED_MANE}" width="1000" height="1000" mask="url(#pride-refined-lower-mane)"/></g>
       <filter id="pride-fur-color" color-interpolation-filters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
         <feColorMatrix type="hueRotate" values="${style.hue}"/>
         <feColorMatrix type="saturate" values="${style.sat}"/>
@@ -89,7 +92,8 @@
         <feComposite in2="shadow-alpha" operator="in"/>
       </filter>
       <mask id="pride-head-matte" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" style="mask-type:alpha">
-        <rect width="1000" height="747" fill="white"/>
+        <rect width="1000" height="610" fill="white"/>
+        <ellipse cx="690" cy="622" rx="115" ry="98" fill="white"/>
         ${maneShape}
       </mask>
       <mask id="pride-source-alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" style="mask-type:alpha"><use href="#pride-base-image"/></mask>

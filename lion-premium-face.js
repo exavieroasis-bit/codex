@@ -115,12 +115,11 @@
   }
   function renderMouth(state,anchors,pal) {
     const p=palette(pal),a=at(anchors?.mouth||{},{x:663,y:640,width:140,height:75,rotation:-12});
-    const type=['smirk','bored','grin','snarl','tongue','gold','bubble','cigar'].includes(state.mouth)?state.mouth:'smirk';
+    const type=['smirk','bored','grin','snarl','gold','bubble','cigar'].includes(state.mouth)?state.mouth:'smirk';
     let art='<defs><linearGradient id="pride-premium-mouth-depth" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#482e28"/><stop offset=".6" stop-color="#221b1a"/><stop offset="1" stop-color="#302020"/></linearGradient></defs>';
     if(['smirk','bubble','cigar'].includes(type)) {
       art+=line(seam,2.1,INK,'opacity=".88"')+
         line('M85-45Q91-48 97-42',1.5,INK)+line('M-98-9L-103-13',1.1,INK);
-      if(type==='smirk') art+=path('M48-28L61-32L57-15Q53-10 50-19Z','#f1e4c4',`stroke="${INK}" stroke-width="1.5"`)+path('M51-26L57-28L55-17Z','#fff2d7');
     } else if(type==='bored') {
       art+=line('M-96-7C-25-15 36-27 90-41',2,INK,'opacity=".88"')+
         line('M-98-11L-99-5M87-45L94-39',1.3,INK)+line('M-58 0C-12-5 28-14 61-25',1.1,p.muzzleShade,'opacity=".55"');
@@ -134,10 +133,6 @@
         line('M-18-5L-17 5M8-11L9 0',1.1,'#7b6a55')+
         tooth('M-34 15L-28 3L-19 20ZM30 16L37 0L44 9Z','#d9cba9')+
         line('M-93-23Q-80-31-65-25M-92-31L-82-36M72-49L82-55',1.8,p.muzzleShade,'opacity=".65"');
-    } else if(type==='tongue') {
-      art+=path(opening,'url(#pride-premium-mouth-depth)',`stroke="${INK}" stroke-width="2.7"`)+tooth('M-80-7L-63-8L-60 7Q-72 6-80-7Z')+
-        path('M1 7C15-2 39-6 53-2L58 24C61 49 31 64 11 49Q1 32 1 7Z','#bb7771',`stroke="${INK}" stroke-width="2.3"`)+
-        path('M10 7Q27-1 44 4L46 20Q25 16 11 26Z','#dba197')+line('M29 7Q34 25 32 43',1.4,'#8c4e4a')+line('M15 49Q36 60 51 43',1.1,'#dfaea0');
     }
     if(type==='bubble') {
       art+=path('M88-37L98-43L102-28L91-26Z','#aa6178',`stroke="${INK}" stroke-width="1.3"`)+
