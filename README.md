@@ -6,9 +6,11 @@ The renderer replaces broad anatomical regions instead of scaling isolated acces
 
 ## Open the studio
 
-Download **PRIDE-Studio.zip**, extract it, and open **PRIDE-Studio.html** in Chrome, Edge, Firefox, or Safari. If a text editor opens, right-click the extracted file and choose **Open With** → your browser. A workspace code viewer displays source; it cannot run the page.
+The root `index.html` is a conventional hosted web application with separate JavaScript in `app/` and lossless artwork in `assets/`. Serve these files together over HTTP(S), including under a repository subpath such as `/codex/`. No account, wallet, installer, or ZIP is needed to use the hosted application. GitHub Pages must actually complete its deployment before its address will work; the published address has not been verified from this session.
 
-All artwork, scripts, and styles are embedded. No installation, server, account, wallet, or internet connection is needed after downloading. **PRIDE-Preview.png** is an actual default export and is included in the ZIP.
+A user reported an antivirus warning for `PRIDE-Studio.zip`. Its source and contents have been reviewed, but the antivirus detection remains unresolved. Keep the protection enabled; see [DOWNLOAD-REVIEW.md](DOWNLOAD-REVIEW.md) for the exact archive hash, findings, and limits of that review. The archive has been retained unchanged for comparison.
+
+`PRIDE-Studio.html` is the separate, self-contained offline build. The normal hosted `index.html` should not be opened through `file://`, because browser origin rules can prevent canvas exports with separate local image files. A workspace code viewer does not run either application.
 
 ## Create and export
 
@@ -32,9 +34,9 @@ python build.py
 python package.py
 ```
 
-`build.py` extracts lossless contextual regions from the authored portraits and embeds them as lossless WebP. It does not resize or degrade the artwork. The runtime composites at 1254 pixels, finishes the portrait on canvas, and embeds that complete result as PNG.
+`build.py` extracts lossless contextual regions from the authored portraits. It emits ordinary WebP files for the hosted site and embeds the same bytes in the separate standalone HTML. It does not resize or degrade the artwork. The runtime composites at 1254 pixels, finishes the portrait on canvas, and embeds that complete result as PNG.
 
-For local development, run `python -m http.server 8000 --directory /workspace/codex`. Cloud browser checks use an internal HTTP server because the managed browser blocks `file://` navigation; the extracted file works in a normal desktop browser.
+For local development, run `python -m http.server 8000 --directory /workspace/codex`. Cloud browser checks use an internal HTTP server because the managed browser blocks `file://` navigation. The standalone build embeds its images to avoid separate-file origin restrictions.
 
 ## Source files
 
@@ -42,6 +44,10 @@ For local development, run `python -m http.server 8000 --directory /workspace/co
 - `lion-unified/hat-*.png`, `glasses-*.png`, `top-*.png`, `eye-*.png`, `mouth-*.png`, `scar-*.png`: full in-situ edited portraits; only their relevant contextual regions enter the app.
 - `lion-art.js`: trait definitions, region replacement, pigment recoloring, canvas flattening, render cache, and SVG wrapper.
 - `studio.template.html`: preserved layout and controls, collection storage, and downloads.
+- `app/`: generated external scripts for the hosted site.
+- `assets/`: generated lossless WebP portrait regions for the hosted site.
+- `PRIDE-Studio.html`: separate generated standalone offline build.
+- `DOWNLOAD-REVIEW.md`: reported download warning, source/package findings, and remaining diagnostic requirements.
 - `build.py`, `package.py`: standalone HTML builder and ZIP packager.
 - `PRIDE-Preview.png`: current default generated artwork.
 
