@@ -1,0 +1,13 @@
+{
+  "name": "pride-browser-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PRIDE lion studio browser preview",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.cjs",
+    "dev": "node server.cjs"
+  }
+}
