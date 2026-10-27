@@ -1,45 +1,48 @@
 # PRIDE. — Lion PFP Studio
 
-An original lion collectible generator with a detailed illustrated lion, expressive inked facial features, and fitted accessory layers. The Artist Series replaces the initial simplified character with a 1254px transparent illustrated base, intricate mane detail, shaded anatomy, and more elaborate hats, eyewear, scars, and clothing.
+An original illustrated lion collectible generator. The blue lion, flowing mane, three-quarter pose, and existing studio layout are retained. Headwear, eyewear, clothing, and facial traits are now painted on the character: each variation includes the surrounding fur, compressed hat seat, seated bridge and temples, or mane crossing the collar.
 
-The current refinement includes a dedicated full-resolution navy cap and a complete gold navigator frame, with continuous rims, nose pads, and controlled reflections. Glasses are fitted as one intact pair, rather than separately cropped lenses. The lower mane has a repainted finish with smoother directed locks, blended beneath the unchanged face and upper mane. Clothing sits behind a continuous mane silhouette, without the old rectangular neck cutoff.
+The renderer replaces broad anatomical regions instead of scaling isolated accessory cutouts over a fixed photograph. It blends complementary premultiplied colors without opening an alpha gap. Skin colors change the cyan fur pigment while preserving fabric and metal colors. Eyes, mouths, and scars also use localized, in-situ painted variations. Iris colors change the existing painted pigment, preserving the original eyelids, pupil shape, and highlights. The live preview, full-art view, saved thumbnails, and exports all use the finished flattened image.
 
-Open **index.html** in a modern browser. The exported HTML contains all scripts, styles, illustrated base, and editable traits. No package installation, network connection, account, or wallet is needed. The managed browser used in this cloud environment blocks `file://` URLs, so automated browser validation uses an internal local HTTP server instead.
+## Open the studio
 
-If the workspace link displays HTML source, it has opened the code viewer. Download **PRIDE-Studio.zip**, extract it, and open **PRIDE-Studio.html** with a web browser. The ZIP includes the complete page and short instructions. Run `python package.py` after rebuilding to refresh the downloadable package. The code viewer cannot execute the page, and this repository is not currently deployed to a public website.
+Download **PRIDE-Studio.zip**, extract it, and open **PRIDE-Studio.html** in Chrome, Edge, Firefox, or Safari. If a text editor opens, right-click the extracted file and choose **Open With** → your browser. A workspace code viewer displays source; it cannot run the page.
 
-## Create a lion
+All artwork, scripts, and styles are embedded. No installation, server, account, wallet, or internet connection is needed after downloading. **PRIDE-Preview.png** is an actual default export and is included in the ZIP.
 
-- Choose **hats, glasses, skins, eye types, eye colors, mouths, face scars, tops, and backgrounds**. Skins recolor the illustrated base; eye, mouth, and accessory options have individually drawn shapes. The opening portrait is the blue lion with its navy cap, gold navigator glasses, sand hoodie, closed confident expression, and teal backdrop.
-- The tongue option has been retired. Previously saved tongue choices reopen with the closed confident expression; other saved identity and trait settings are retained. Gold and silver navigator finishes replace the former cropped aviator and round-lens treatments.
-- Click **Shuffle traits** to randomly pick a combination. Accessory options include no accessory.
-- Lock individual categories to preserve them during shuffling. Locks do not prevent manual editing. Reset restores the default lion and clears locks.
-- Give your lion a name and edition number.
-- **Save to my pride** keeps up to 60 lions in this browser. Reopen any saved lion to edit or export it. Browser storage must be available; clearing browser data, private browsing, or changing browsers/URLs can lose saved creations. Export important artwork as a file.
-- Export a **PNG** at 512, 1024, or 2048 pixels, or download the self-contained **SVG**. The SVG contains the embedded PNG illustration and editable vector overlays; the base is raster artwork and 2048px export upscales it.
-- Export **NFT metadata** with human-readable trait names. The JSON references the matching PNG filename. Before minting, upload the artwork and replace the JSON `image` field with its hosted URI.
-- **View full artwork** enlarges the actual current creation, including all selected traits.
+## Create and export
 
-The app creates artwork and metadata. It does not deploy contracts, mint tokens, connect a wallet, or upload anything.
+- Select backgrounds, skins, hats, glasses, eye types, eye colors, mouths, scars, and tops. All nine categories and 68 options remain available. Opaque glasses cover the eyes naturally.
+- Shuffle combinations and lock individual categories. Reset restores the blue lion with navy cap, gold navigator glasses, sand hoodie, and closed confident expression.
+- Name your lion and choose an edition number.
+- Save up to 60 lions in this browser, reopen them, or remove them. Older saved thumbnails refresh to the current artwork. Export important creations before clearing browser storage or switching browsers.
+- Export PNG at 512, 1024, or 2048 pixels. Artwork sources are 1254 pixels square, so 2048 exports upscale the illustration.
+- Download a self-contained SVG containing **one flattened PNG image**. This preserves exactly the same completed art; individual accessory vectors are not exported.
+- Download JSON metadata with all nine selected trait names and a matching image filename. Upload the image separately and replace that filename with its hosted URI before minting.
+- The retired tongue trait reopens as the closed confident expression.
+
+This app creates artwork and metadata. It does not mint NFTs, deploy contracts, connect a wallet, or upload creations.
+
+## Build from source
+
+The downloaded HTML has no dependencies. Rebuilding requires Python and Pillow (`python -m pip install Pillow`).
+
+```sh
+python build.py
+python package.py
+```
+
+`build.py` extracts lossless contextual regions from the authored portraits and embeds them as lossless WebP. It does not resize or degrade the artwork. The runtime composites at 1254 pixels, finishes the portrait on canvas, and embeds that complete result as PNG.
+
+For local development, run `python -m http.server 8000 --directory /workspace/codex`. Cloud browser checks use an internal HTTP server because the managed browser blocks `file://` navigation; the extracted file works in a normal desktop browser.
 
 ## Source files
 
-- `lion-art.js`: trait definitions, skin palettes, artwork composition, and SVG renderer.
-- `lion-premium-face.js`: fitted eye and mouth expressions.
-- `lion-premium-traits.js`: detailed hats, glasses, scars, clothing, and layering masks.
-- `lion-mane-geometry.js`: connected mane boundary used to fit collars and clothing beneath the fur without restoring bare shoulder pixels. This precomputed vector geometry adds no runtime or build dependencies.
-- `lion-base.png`: transparent detailed lion illustration used by the live generator.
-- `lion-refined-mane.png`: repainted lower-mane finish, blended into the original portrait below the face.
-- `lion-regal-cap.png`, `lion-regal-glasses.png`: dedicated high-resolution cap and complete frame illustration.
-- `lion-regal.js`: fitted intact frames, cap placement, and their shared material/contact treatment.
-- `lion-wearables.png`, `lion-wardrobe.png`: transparent illustrated layer sheets used by the live generator.
-- `lion-atelier.js`: individual wearable placement, head openings, contact shading, and fitted lens rendering.
-- `lion-atelier-geometry.js`: precomputed alpha outlines that isolate individual sheet assets without neighboring artwork. No geometry-processing packages are needed to build or run the app.
-- `studio.template.html`: interface, styling, and application logic.
-- `lion-concept.png`: earlier concept illustration, retained separately.
-- `build.py`: combines those files into the standalone `index.html`. Run `python build.py` after editing source files.
-- `mossborn.html`: the previous MOSSBORN generator, preserved as a separate standalone page.
-- `lion-art-v1.js`: the previous simplified lion renderer, retained separately.
-- `PRIDE-Preview.png`: the current default portrait exported by the actual generator, also included in the ZIP for quick review.
+- `lion-unified/master.png`: complete, cohesive cap/navigator/hoodie portrait.
+- `lion-unified/hat-*.png`, `glasses-*.png`, `top-*.png`, `eye-*.png`, `mouth-*.png`, `scar-*.png`: full in-situ edited portraits; only their relevant contextual regions enter the app.
+- `lion-art.js`: trait definitions, region replacement, pigment recoloring, canvas flattening, render cache, and SVG wrapper.
+- `studio.template.html`: preserved layout and controls, collection storage, and downloads.
+- `build.py`, `package.py`: standalone HTML builder and ZIP packager.
+- `PRIDE-Preview.png`: current default generated artwork.
 
-For optional local development, run `python -m http.server 8000 --directory /workspace/codex` and open the page using your browser’s local server workflow.
+Earlier base images, atlas assets, procedural facial/trait modules, rig modules, and `mossborn.html` remain as historical source material. The new live renderer does not use those isolated hat, frame, or garment atlases.

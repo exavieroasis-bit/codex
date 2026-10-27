@@ -1,7 +1,6 @@
-/* PRIDE Artist Series — embedded illustrated lion and premium fitted trait layers. */
-(function (global) {
+/* PRIDE — unified, in-situ painted character variations, flattened before display. */
+(function(global){
   'use strict';
-  const INK = '#251f22';
   const traits = [
     {key:'background',label:'Background',options:[{id:'mint',label:'Mint',color:'#b8c9bc'},{id:'sand',label:'Sand',color:'#dfcda9'},{id:'sky',label:'Powder blue',color:'#acc2cf'},{id:'rose',label:'Dusty rose',color:'#c6a2a3'},{id:'lilac',label:'Lilac',color:'#b6aec8'},{id:'gold',label:'Mustard',color:'#c9b06e'},{id:'ink',label:'Midnight',color:'#525d68'},{id:'cream',label:'Cream',color:'#eee6d5'},{id:'teal',label:'Deep teal',color:'#086a7a'}]},
     {key:'skin',label:'Skin',options:[{id:'safari',label:'Safari tan',color:'#d6a760'},{id:'ivory',label:'Ivory',color:'#e8ddc4'},{id:'charcoal',label:'Charcoal',color:'#5e6069'},{id:'rose',label:'Pink lemonade',color:'#d997a5'},{id:'zombie',label:'Zombie',color:'#a6b882'},{id:'blue',label:'Arctic blue',color:'#91b9c5'},{id:'gold',label:'Solid gold',color:'#e5bd55'},{id:'tiger',label:'Tiger stripes',color:'#d9954e'}]},
@@ -14,104 +13,135 @@
     {key:'top',label:'Top',options:[{id:'none',label:'Bare fur'},{id:'varsity',label:'Varsity jacket',color:'#48654e'},{id:'hoodie',label:'Oversized hoodie',color:'#d1c7ad'},{id:'tee',label:'Black tee',color:'#39373b'},{id:'denim',label:'Denim jacket',color:'#6b8b9b'},{id:'suit',label:'Night suit',color:'#434752'},{id:'tank',label:'Ribbed tank',color:'#e8dfca'},{id:'aloha',label:'Aloha shirt',color:'#578e88'},{id:'mariner',label:'Mariner stripes',color:'#ede4cf'}]}
   ];
   const defaults = {background:'teal',skin:'blue',hat:'cap',glasses:'aviator',eyeType:'bored',eyeColor:'amber',mouth:'smirk',scar:'none',top:'hoodie'};
-  const BASE_IMAGE='__PREMIUM_LION_BASE__';
-  const REFINED_MANE='__REFINED_MANE__';
-  const anchors={
-    eyes:{left:{x:582,y:364,width:105,height:58,rotation:0},right:{x:740,y:365,width:49,height:53,rotation:0}},
-    mouth:{x:663,y:640,width:140,rotation:-12},
-    hat:{cx:540,cy:150,width:480,rotation:-3},
-    glasses:{left:{x:582,y:364},right:{x:740,y:365},tilt:0},
-    top:{neckX:560,neckY:850,leftX:40,rightX:960,shoulderY:880},
-    cheek:{x:532,y:468},brow:{x:569,y:310}
-  };
-  const styles={
-    safari:{hue:0,sat:1,r:1,g:1,b:1},
-    ivory:{hue:0,sat:.18,r:1.13,g:1.12,b:1.07},
-    charcoal:{hue:0,sat:.08,r:.48,g:.51,b:.59},
-    rose:{hue:289,sat:.6,r:1.12,g:.94,b:1.08},
-    zombie:{hue:43,sat:.62,r:.86,g:1.02,b:.81},
-    blue:{hue:160,sat:.62,r:.81,g:1.02,b:1.12},
-    gold:{hue:0,sat:.92,r:1.12,g:1.12,b:.79},
-    tiger:{hue:-5,sat:1.14,r:1.04,g:.96,b:.88}
-  };
+
+  const sources=__UNIFIED_PORTRAITS__;
+  const SIDE=1254;
+  const images=new Map(),cache=new Map();
+  const anchors={eyes:{left:{x:578,y:411,width:137,height:61,rotation:3},right:{x:716,y:422,width:64,height:54,rotation:4}},mouth:{x:679,y:669,width:147,height:75,rotation:-14},cheek:{x:545,y:522},brow:{x:576,y:366}};
   const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const validate=state=>Object.fromEntries(traits.map(cat=>[cat.key,cat.options.some(opt=>opt.id===state?.[cat.key])?state[cat.key]:defaults[cat.key]]));
-  function mappedColor(hex,style){
-    const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
-    const angle=style.hue*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
-    const matrix=[
-      [.213+c*.787-s*.213,.715-c*.715-s*.715,.072-c*.072+s*.928],
-      [.213-c*.213+s*.143,.715+c*.285+s*.14,.072-c*.072-s*.283],
-      [.213-c*.213-s*.787,.715-c*.715+s*.715,.072+c*.928+s*.072]
-    ];
-    const rotated=matrix.map(row=>Math.max(0,Math.min(1,row.reduce((v,n,i)=>v+n*rgb[i],0))));
-    const luminance=rotated[0]*.213+rotated[1]*.715+rotated[2]*.072;
-    const scaled=rotated.map((v,i)=>(luminance+(v-luminance)*style.sat)*[style.r,style.g,style.b][i]);
-    return '#'+scaled.map(v=>Math.round(Math.max(0,Math.min(1,v))*255).toString(16).padStart(2,'0')).join('');
+  function canvas(){const c=document.createElement('canvas');c.width=c.height=SIDE;return c;}
+  const ready=Promise.all(Object.entries(sources).map(async([key,source])=>{
+    const image=new Image();image.src=source.src;await image.decode();images.set(key,{image,...source});
+  }));
+  function paintImage(ctx,key){const plate=images.get(key);if(!plate)throw new Error('Artwork is still loading.');ctx.drawImage(plate.image,plate.x,plate.y,plate.width,plate.height);}
+  const smooth=(lo,hi,x)=>{const n=Math.max(0,Math.min(1,(x-lo)/(hi-lo)));return n*n*(3-2*n);};
+  const masks=new Map();
+  const baselinePixels=new Map();
+  function region(key,kind){
+    if(masks.has(key)){const hit=masks.get(key);masks.delete(key);masks.set(key,hit);return hit;}
+    const source=canvas(),sc=source.getContext('2d',{willReadFrequently:true});paintImage(sc,key);
+    const baseline=(kind==='eye'||kind==='scar'||kind==='skin'||(kind==='glasses'&&key!=='glasses-none'))?'glasses-none':'master';
+    if(!baselinePixels.has(baseline)){const c=canvas(),mc=c.getContext('2d',{willReadFrequently:true});paintImage(mc,baseline);baselinePixels.set(baseline,mc.getImageData(0,0,SIDE,SIDE).data);}
+    const pixels=sc.getImageData(0,0,SIDE,SIDE).data,seed=sc.createImageData(SIDE,SIDE),d=seed.data,base=baselinePixels.get(baseline);
+    const box=sources[key];
+    for(let y=box.y;y<box.y+box.height;y++)for(let x=box.x;x<box.x+box.width;x++){
+      // Keep each edit in its anatomical zone. Hat brims may wrap around the
+      // temple, while the eye region stays available to independently chosen frames.
+      if(kind==='mouth'&&y<700&&(key!=='mouth-cigar'||x<1040))continue;
+      if(kind==='skin'&&y>444&&y<600)continue;
+      if(kind==='hat'&&y>448&&x>565&&x<977)continue;
+      if(kind==='scar'&&key!=='scar-eyebrow'&&(y<560||x>800))continue;
+      if(kind==='scar'&&key==='scar-eyebrow'&&(y>515||x<620||x>825))continue;
+      const i=(y*SIDE+x)*4;
+      const alpha=Math.abs(pixels[i+3]-base[i+3]);
+      const difference=Math.max(...[0,1,2].map(c=>Math.abs(pixels[i+c]*pixels[i+3]/255-base[i+c]*base[i+3]/255)));
+      d[i]=d[i+1]=d[i+2]=255;d[i+3]=(alpha>24||difference>25)?255:0;
+    }
+    sc.putImageData(seed,0,0);
+    const blurred=canvas(),bc=blurred.getContext('2d',{willReadFrequently:true});bc.filter='blur(9px)';bc.drawImage(source,0,0);bc.filter='none';
+    const field=bc.getImageData(0,0,SIDE,SIDE),fd=field.data;
+    for(let y=0;y<SIDE;y++)for(let x=0;x<SIDE;x++){
+      const i=(y*SIDE+x)*4;
+      const inBox=x>=box.x&&x<box.x+box.width&&y>=box.y&&y<box.y+box.height;
+      let boundary=kind==='hat'?(1-smooth(440,458,y))+(smooth(962,990,x)+1-smooth(550,575,x))*smooth(440,458,y):1;
+      // Clear monocle keeps the selected painted eyes beneath its lens.
+      if(kind==='skin'&&y>444&&y<600)boundary=0;
+      if(key==='glasses-monocle'&&(((x-716)/52)**2+((y-520)/29)**2<1||((x-891)/24)**2+((y-535)/24)**2<1))boundary=0;
+      fd[i]=fd[i+1]=fd[i+2]=255;fd[i+3]=inBox?Math.round(255*smooth(.005,.11,fd[i+3]/255)*Math.min(1,boundary)):0;
+    }
+    bc.putImageData(field,0,0);masks.set(key,blurred);if(masks.size>12)masks.delete(masks.keys().next().value);return blurred;
   }
-  function paletteFor(skin){
-    const style=styles[skin];
-    const source={fur:'#eaae53',shadow:'#bc8037',light:'#f8c677',muzzle:'#fadeb4',muzzleShade:'#e4bf8b'};
-    return {...Object.fromEntries(Object.entries(source).map(([key,value])=>[key,mappedColor(value,style)])),ink:'#261b15'};
+  function replaceRegion(ctx,key,kind){
+    // A plate contains the wearable AND its surrounding anatomy. Replace the
+    // whole contact region; never paste the accessory's own cutout silhouette.
+    const mask=region(key,kind),plate=canvas(),pc=plate.getContext('2d');paintImage(pc,key);
+    pc.globalCompositeOperation='destination-in';pc.drawImage(mask,0,0);
+    ctx.save();ctx.globalCompositeOperation='destination-out';ctx.drawImage(mask,0,0);
+    // Add complementary premultiplied contributions, preserving continuous
+    // alpha through the feather (source-over would produce a transparent gap).
+    ctx.globalCompositeOperation='lighter';ctx.drawImage(plate,0,0);ctx.restore();
   }
-  function skinMarks(state,palette){
-    if(state.skin==='tiger') return `<g fill="#3b291e" opacity=".87"><path d="M504 377q34 16 39 47l-38-24 5-8-14-19Z"/><path d="M493 417q41 17 55 47-24-7-48-27l7-5Z"/><path d="M491 464q35 1 54 23l-29-9-23 1Z"/><path d="M658 250q-20 28-19 58-13-26-6-50Z"/><path d="M687 263q-13 25-9 48-17-18-16-38Z"/><path d="M779 365q-17 17-18 44l25-18-7-7 8-14Z"/><path d="M780 407q-13 17-10 32l20-17Z"/></g>`;
-    if(state.skin==='zombie') return `<g stroke="#334b2b" stroke-linecap="round" fill="none"><path d="m534 477 13 8 11-3 11 13" stroke-width="3"/><path d="m536 482 4-8m10 17 4-10m7 16 5-8" stroke-width="2"/><path d="m686 289 5 17-6 12m4-20 9 3m-14 10 10 4" stroke-width="2.7"/></g>`;
-    if(state.skin==='gold') return `<g fill="#fff6c7" opacity=".8"><path d="m524 344 4-10 4 10 9 4-9 3-4 10-4-10-9-3Z"/><path d="m777 540 3-7 3 7 7 3-7 3-3 7-3-7-7-3Z"/></g>`;
-    return '';
+  const skinStyles={safari:[37,.70,1],ivory:[43,.15,1.12],charcoal:[217,.08,.57],rose:[341,.45,1.03],zombie:[83,.30,.94],gold:[45,.82,1.06],tiger:[30,.81,1]};
+  function rgb(h,s,l){
+    const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1));};return [f(0),f(8),f(4)];
+  }
+  function recolor(ctx,skin){
+    if(skin==='blue')return;
+    const [target,saturation,lightness]=skinStyles[skin],data=ctx.getImageData(0,0,SIDE,SIDE),d=data.data;
+    for(let i=0;i<d.length;i+=4){
+      if(d[i+3]===0)continue;
+      const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255,hi=Math.max(r,g,b),lo=Math.min(r,g,b),delta=hi-lo;
+      // Only the cyan fur pigment moves. Navy fabric, gold metal, lenses,
+      // muzzle ink and garment colors retain their original painted material.
+      if(b<=g||g<=r||delta<.018)continue;
+      if(delta/(1-Math.abs(hi+lo-1)||1)<.25)continue;
+      const ratio=(g-r)/(b-r),weight=smooth(.43,.52,ratio)*smooth(.012,.028,delta);
+      if(weight===0)continue;
+      let h=(4+(r-g)/delta)*60;
+      const l=(hi+lo)/2,newL=Math.min(.97,l*lightness),newS=saturation*(.65+.35*Math.min(1,delta/.3));
+      const result=rgb((target+(h-196)*.28+360)%360,newS,newL);
+      for(let j=0;j<3;j++)d[i+j]=Math.round(d[i+j]*(1-weight)+result[j]*255*weight);
+    }
+    ctx.putImageData(data,0,0);
+  }
+  const irisStyles={green:[150,.48,1],blue:[201,.64,1.05],violet:[270,.50,1.02],red:[0,.58,.95],black:[220,.04,.56],gold:[49,.86,1.16]};
+  function eyePigment(ctx,state){
+    if(state.eyeColor==='amber'||!['none','monocle'].includes(state.glasses))return;
+    const [hue,sat,light]=irisStyles[state.eyeColor],data=ctx.getImageData(640,460,320,130),d=data.data;
+    for(let y=0;y<130;y++)for(let x=0;x<320;x++){
+      const px=x+640,py=y+460;
+      if(((px-716)/38)**2+((py-520)/32)**2>1&&((px-890)/21)**2+((py-535)/27)**2>1)continue;
+      const i=(y*320+x)*4,r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;
+      if(r<=g||g<=b||r-b<.07)continue;
+      const hi=Math.max(r,g,b),lo=Math.min(r,g,b),l=(hi+lo)/2;
+      const out=rgb(hue,sat,Math.min(.96,l*light));
+      for(let j=0;j<3;j++)d[i+j]=Math.round(out[j]*255);
+    }
+    ctx.putImageData(data,640,460);
+  }
+  function portrait(state){
+    const key=JSON.stringify(state);
+    if(cache.has(key)){const hit=cache.get(key);cache.delete(key);cache.set(key,hit);return hit;}
+    const c=canvas(),ctx=c.getContext('2d',{willReadFrequently:true});
+    paintImage(ctx,'master');
+    if(state.top!=='hoodie')replaceRegion(ctx,'top-'+state.top,'top');
+    if(state.glasses!=='aviator')replaceRegion(ctx,'glasses-none','glasses');
+    if(['none','monocle'].includes(state.glasses)&&state.eyeType!=='bored')replaceRegion(ctx,'eye-'+state.eyeType,'eye');
+    if(state.mouth!=='smirk')replaceRegion(ctx,'mouth-'+state.mouth,'mouth');
+    if(state.skin==='tiger')replaceRegion(ctx,'skin-tiger','skin');
+    if(state.scar!=='none')replaceRegion(ctx,'scar-'+state.scar,'scar');
+    if(state.glasses==='aviator'&&(state.scar!=='none'||state.skin==='tiger'))replaceRegion(ctx,'glasses-aviator','glasses');
+    if(!['none','aviator'].includes(state.glasses))replaceRegion(ctx,'glasses-'+state.glasses,'glasses');
+    if(state.hat!=='cap')replaceRegion(ctx,'hat-'+state.hat,'hat');
+    recolor(ctx,state.skin);eyePigment(ctx,state);
+    ctx.globalCompositeOperation='destination-over';ctx.fillStyle=traits[0].options.find(o=>o.id===state.background).color;ctx.fillRect(0,0,SIDE,SIDE);
+    // The live preview and all exported formats use this exact flattened image.
+    const result={uri:c.toDataURL('image/png'),canvas:c};cache.set(key,result);
+    if(cache.size>5)cache.delete(cache.keys().next().value);
+    return result;
   }
   function renderSVG(input,options={}){
-    const state=validate(input),style=styles[state.skin],palette=paletteFor(state.skin);
-    const size=Math.max(64,Math.min(8192,Math.round(Number(options.size)||1024)));
-    const background=traits[0].options.find(opt=>opt.id===state.background).color;
-    const label=`PRIDE Artist Series lion, ${traits[1].options.find(opt=>opt.id===state.skin).label}, ${traits[2].options.find(opt=>opt.id===state.hat).label}`;
-    const wear=global.LionPremiumTraits,face=global.LionPremiumFace,atelier=global.LionAtelier;
-    const clothing=atelier.renderTop(state);
-    const hatOccluder=atelier.occludeHat(state);
-    const hatShadow=atelier.hatContact(state);
-    const image=`<use href="#pride-base-image" filter="url(#pride-fur-color)"/>`;
-    const maneGeometry=global.LionManeGeometry;
-    const maneShape=`<path d="${maneGeometry.path}" transform="scale(${maneGeometry.scale})" fill="white"/>`;
-    // The connected mane envelope excludes isolated ink on the bare shoulders.
-    // Use the unchanged illustration alpha for naturally antialiased fur edges.
-    const defs=`<defs>
-      ${atelier.definition(state)}
-      <filter id="pride-atelier-contact" x="-10%" y="-100%" width="120%" height="300%"><feGaussianBlur stdDeviation="2.3"/></filter>
-      <linearGradient id="pride-lower-fur-blend" x1="0" y1="700" x2="0" y2="766" gradientUnits="userSpaceOnUse"><stop stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white"/></linearGradient>
-      <mask id="pride-refined-lower-mane" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" style="mask-type:alpha"><rect width="1000" height="1000" fill="url(#pride-lower-fur-blend)"/></mask>
-      <g id="pride-base-image"><image href="${BASE_IMAGE}" width="1000" height="1000"/><image href="${REFINED_MANE}" width="1000" height="1000" mask="url(#pride-refined-lower-mane)"/></g>
-      <filter id="pride-fur-color" color-interpolation-filters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
-        <feColorMatrix type="hueRotate" values="${style.hue}"/>
-        <feColorMatrix type="saturate" values="${style.sat}"/>
-        <feComponentTransfer><feFuncR type="linear" slope="${style.r}"/><feFuncG type="linear" slope="${style.g}"/><feFuncB type="linear" slope="${style.b}"/></feComponentTransfer>
-      </filter>
-      <filter id="pride-fur-contact" x="-10%" y="-10%" width="120%" height="120%">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="1.15"/>
-        <feOffset dy="3.2" result="shadow-alpha"/>
-        <feFlood flood-color="#291b16" flood-opacity=".24"/>
-        <feComposite in2="shadow-alpha" operator="in"/>
-      </filter>
-      <mask id="pride-head-matte" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" style="mask-type:alpha">
-        <rect width="1000" height="610" fill="white"/>
-        <ellipse cx="690" cy="622" rx="115" ry="98" fill="white"/>
-        ${maneShape}
-      </mask>
-      <mask id="pride-source-alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" style="mask-type:alpha"><use href="#pride-base-image"/></mask>
-      <mask id="pride-hat-seat" maskUnits="userSpaceOnUse" x="-100" y="-300" width="1300" height="1600" style="mask-type:luminance"><rect x="-100" y="-300" width="1300" height="1600" fill="white"/>${hatOccluder}</mask>
-      ${clothing?`<g id="pride-garment-layer">${clothing}</g><mask id="pride-garment-alpha" maskUnits="userSpaceOnUse" x="-100" y="0" width="1300" height="1400" style="mask-type:alpha"><use href="#pride-garment-layer"/></mask>`:''}
-    </defs>`;
-    const body=`${image}${clothing?`<use href="#pride-garment-layer"/><g mask="url(#pride-garment-alpha)"><g filter="url(#pride-fur-contact)"><g mask="url(#pride-head-matte)"><use href="#pride-base-image"/></g></g></g><g mask="url(#pride-head-matte)">${image}</g>`:''}`;
-    const figure=`<g mask="url(#pride-hat-seat)">${body}${skinMarks(state,palette)}${face.renderEyes(state,anchors,palette)}${face.renderMouth(state,anchors,palette)}${wear.renderScars(state,anchors,palette)}</g>`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}" viewBox="0 0 1000 1000" role="img" aria-label="${esc(label)}"><title>${esc(label)}</title>${defs}<rect width="1000" height="1000" fill="${background}"/><g transform="translate(25 105) scale(.9)" stroke-linecap="round" stroke-linejoin="round">${figure}${hatShadow?`<g mask="url(#pride-source-alpha)">${hatShadow}</g>`:''}${atelier.renderGlasses(state)??wear.renderGlasses(state,anchors,palette)}${atelier.restoreHatOpening(state)}${atelier.renderHat(state)}</g></svg>`;
+    const state=validate(input),size=Math.max(64,Math.min(8192,Math.round(Number(options.size)||1024)));
+    const label='PRIDE lion, '+traits[1].options.find(o=>o.id===state.skin).label+', '+traits[2].options.find(o=>o.id===state.hat).label;
+    const image=portrait(state).uri;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 1254 1254" role="img" aria-label="${esc(label)}"><title>${esc(label)}</title><image width="1254" height="1254" href="${image}"/></svg>`;
   }
+  function thumbnail(input,size=256){const c=document.createElement('canvas');c.width=c.height=size;c.getContext('2d').drawImage(portrait(validate(input)).canvas,0,0,size,size);return c.toDataURL('image/png');}
   function randomize(previous){
-    const next={};
-    for(const cat of traits){
-      const optional=['hat','glasses','scar'].includes(cat.key);
-      next[cat.key]=optional&&Math.random()<.28?'none':cat.options[Math.floor(Math.random()*cat.options.length)].id;
-    }
-    if(previous&&traits.every(cat=>next[cat.key]===previous[cat.key])) next.background=traits[0].options[(traits[0].options.findIndex(opt=>opt.id===next.background)+1)%traits[0].options.length].id;
+    const next={};for(const cat of traits){const optional=['hat','glasses','scar'].includes(cat.key);next[cat.key]=optional&&Math.random()<.28?'none':cat.options[Math.floor(Math.random()*cat.options.length)].id;}
+    if(previous&&traits.every(cat=>next[cat.key]===previous[cat.key]))next.background=traits[0].options[(traits[0].options.findIndex(o=>o.id===next.background)+1)%traits[0].options.length].id;
     return next;
   }
-  global.LionArt={traits,defaults:{...defaults},renderSVG,randomize,validate,anchors,series:'Artist Series'};
+  global.LionArt={traits,defaults:{...defaults},renderSVG,thumbnail,randomize,validate,anchors,ready,series:'Unified Artist Series',version:'unified-1'};
 })(typeof window!=='undefined'?window:globalThis);

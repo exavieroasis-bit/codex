@@ -147,7 +147,7 @@
     <section id="studio-screen" aria-labelledby="studio-title">
       <div class="intro"><div><p class="eyebrow">ARTIST SERIES / THE LION PFP STUDIO</p><h1 id="studio-title">King of your own jungle.</h1><p>Big mane. Questionable attitude. Build a lion that’s entirely yours.</p></div><div class="intro-action"><span>Feeling lucky, boss?</span><button id="shuffle" type="button" class="button button-gold"><svg class="icon" aria-hidden="true"><use href="#i-shuffle"/></svg>Shuffle traits</button></div></div>
       <div class="workspace">
-        <div class="preview-column"><div class="preview-card"><div class="card-bar"><span class="live"><span class="status-dot"></span> YOUR LION, LIVE</span><span id="edition-tag" class="edition-tag">PRIDE #001</span></div><div id="artwork" aria-label="Live lion PFP artwork"></div><div class="caption"><div><h2 id="art-name">The Usual Suspect</h2><p id="art-summary">ORIGINAL LION / GOLDEN HOUR</p></div><span id="trait-count" class="trait-badge">9 trait layers</span></div></div><div class="preview-tools"><button id="save" type="button" class="button button-soft"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Save to my pride</button><button id="download-svg" type="button" class="button button-soft"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Download SVG</button></div><div class="preview-note"><span>Detailed artwork. Made for your profile.</span><button type="button" class="text-button" id="concept-open">View full artwork<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div></div>
+        <div class="preview-column"><div class="preview-card"><div class="card-bar"><span class="live"><span class="status-dot"></span> YOUR LION, LIVE</span><span id="edition-tag" class="edition-tag">PRIDE #001</span></div><div id="artwork" aria-label="Live lion PFP artwork"></div><div class="caption"><div><h2 id="art-name">The Usual Suspect</h2><p id="art-summary">ORIGINAL LION / GOLDEN HOUR</p></div><span id="trait-count" class="trait-badge">9 traits</span></div></div><div class="preview-tools"><button id="save" type="button" class="button button-soft"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Save to my pride</button><button id="download-svg" type="button" class="button button-soft"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Download SVG</button></div><div class="preview-note"><span>Detailed artwork. Made for your profile.</span><button type="button" class="text-button" id="concept-open">View full artwork<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div></div>
         <section class="editor" aria-labelledby="editor-title"><div class="editor-header"><div><h2 id="editor-title">Make it your mane.</h2><p>Pick your traits. Lock your favorites. Find your look.</p></div><button id="reset" class="icon-button" type="button" title="Reset to the original lion" aria-label="Reset to the original lion"><svg class="icon" aria-hidden="true"><use href="#i-reset"/></svg></button></div>
           <div class="identity"><div><label for="character-name">Your lion’s name</label><input id="character-name" type="text" value="The Usual Suspect" maxlength="48" autocomplete="off" spellcheck="false"></div><div><label for="edition">Edition</label><input id="edition" type="number" value="1" min="1" max="9999" step="1"></div></div>
           <div class="section-heading"><h3><span class="number">01</span> SET THE SCENE</h3><span class="hint" id="background-name">Mint</span></div><div class="label-row"><span class="field-label" id="background-label">Background</span><button class="lock" id="lock-background" data-lock="background" aria-label="Lock background during shuffle" aria-pressed="false" type="button"><svg class="icon" aria-hidden="true"><use href="#i-unlock"/></svg></button></div><div id="background-options" class="background-grid" role="group" aria-labelledby="background-label"></div>
@@ -168,10 +168,11 @@
 __LION_ART_SCRIPT__
   </script>
   <script>
-  (() => {
+  (async () => {
     'use strict';
     const $ = id => document.getElementById(id);
     const art = window.LionArt;
+    await art.ready;
     const categories = art.traits;
     const defaults = { ...art.defaults };
     let traits = { ...defaults };
@@ -240,7 +241,7 @@ __LION_ART_SCRIPT__
       $('edition-tag').textContent=`PRIDE #${paddedEdition()}`;
       $('art-summary').textContent=`ORIGINAL LION / ${option('skin').label.toUpperCase()}`;
       $('background-name').textContent=option('background').label;
-      $('trait-count').textContent=`${categories.length} trait layers`;
+      $('trait-count').textContent=`${categories.length} traits`;
       document.querySelectorAll('[data-trait]').forEach(select => { select.value=traits[select.dataset.trait]; });
       document.querySelectorAll('[data-background]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.background===traits.background)));
     }
@@ -272,7 +273,9 @@ __LION_ART_SCRIPT__
       $('collection-count').textContent=saved.length;
       $('gallery-summary').textContent=`${saved.length} lion${saved.length===1?'':'s'} saved in this browser`;
       $('empty-state').hidden=saved.length>0; $('gallery').replaceChildren();
+      let refreshed=false;
       saved.forEach(item => {
+        if(item.artVersion!==art.version){item.thumbnail=art.thumbnail(item.traits);item.artVersion=art.version;refreshed=true;}
         const card=document.createElement('article'); card.className='saved-card';
         const open=document.createElement('button'); open.type='button'; open.className='saved-open';
         const image=document.createElement('img'); image.src=item.thumbnail; image.alt=`${item.name}, saved lion PFP`; image.width=image.height=256; image.loading='lazy';
@@ -286,6 +289,7 @@ __LION_ART_SCRIPT__
         remove.addEventListener('click',() => { if (persist(saved.filter(lion => lion.id!==item.id))) { refreshCollection(); notify('Lion removed from your pride.'); } });
         bottom.append(hint,remove); card.append(open,bottom); $('gallery').append(card);
       });
+      if(refreshed)persist(saved);
     }
     function showScreen(screen) {
       const studio=screen==='studio'; $('studio-screen').hidden=!studio; $('collection-screen').hidden=studio;
@@ -328,7 +332,7 @@ __LION_ART_SCRIPT__
       const snapshot={traits:{...traits},name:name.trim()||defaultName,edition};
       try {
         const canvas=await rasterize(snapshot.traits,256);
-        const item={...snapshot,id:globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,thumbnail:canvas.toDataURL('image/png')};
+        const item={...snapshot,artVersion:art.version,id:globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,thumbnail:canvas.toDataURL('image/png')};
         if (persist([item,...saved])) { refreshCollection(); notify('Saved. Your pride just got a little bigger.'); }
       } catch(error) { notify(error.message); } finally { button.disabled=false; }
     });
@@ -342,11 +346,14 @@ __LION_ART_SCRIPT__
     $('concept-dialog').addEventListener('click',event => { if (event.target===$('concept-dialog')) { const rect=$('concept-dialog').getBoundingClientRect(); if (event.clientX<rect.left || event.clientX>rect.right || event.clientY<rect.top || event.clientY>rect.bottom) $('concept-dialog').close(); } });
     try {
       const stored=JSON.parse(localStorage.getItem(storageKey)||'[]');
-      if (Array.isArray(stored)) saved=stored.filter(item => item && typeof item.id==='string' && typeof item.name==='string' && item.traits && typeof item.thumbnail==='string' && item.thumbnail.startsWith('data:image/png;base64,')).slice(0,60).map(item => ({id:item.id,name:item.name.slice(0,48)||defaultName,edition:normalizeEdition(item.edition),traits:normalize(item.traits),thumbnail:item.thumbnail}));
+      if (Array.isArray(stored)) saved=stored.filter(item => item && typeof item.id==='string' && typeof item.name==='string' && item.traits && typeof item.thumbnail==='string' && item.thumbnail.startsWith('data:image/png;base64,')).slice(0,60).map(item => ({id:item.id,name:item.name.slice(0,48)||defaultName,edition:normalizeEdition(item.edition),traits:normalize(item.traits),thumbnail:item.thumbnail,artVersion:item.artVersion}));
     } catch(_) { /* Export still works if browser storage is blocked. */ }
     buildControls(); render(); refreshCollection();
     if (location.hash==='#collection') showScreen('collection');
-  })();
+  })().catch(error => {
+    document.getElementById('artwork').textContent='The artwork could not load. Reopen the downloaded HTML file in a browser.';
+    console.error(error);
+  });
   </script>
 </body>
 </html>
