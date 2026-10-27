@@ -39,4 +39,5 @@ template = (root / 'studio.template.html').read_text()
 assert template.count('__LION_ART_SCRIPT__') == 1
 output = template.replace('__LION_ART_SCRIPT__', artwork)
 (root / 'index.html').write_text(output)
+(root / 'PRIDE-Studio.html').write_text(output)
 print(f'Built index.html ({len(output.encode()):,} bytes); {len(portraits)} lossless in-situ portrait sources embedded.')
